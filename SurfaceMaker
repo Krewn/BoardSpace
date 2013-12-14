@@ -1,0 +1,196 @@
+using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;  
+
+public class KmathMeshMaker : MonoBehaviour {
+
+	// Use this for initialization
+	public Mesh strMesh;
+	
+	
+	private int k;
+	private int tk1;
+	private int tk2;
+	private float k1;
+	private float k2;
+	
+	private List<Vector3> verts;//new Vector3(x,y,z)
+	private List<int>groups;//of 3
+	private List<bool>isThere;
+	
+	public float t;
+	public float xmin,xmax;
+	public float ymin,ymax;
+	public float zmin,zmax;
+	private float _xmin,_xmax;
+	private float _ymin,_ymax;
+	private float _zmin,_zmax;
+	private int _divs;
+	public int divs;
+	
+	//public float f(float a,float b){float c=Mathf.Sin(Mathf.Pow(b,2)+Mathf.Pow(a,2)+t);return c;}
+	public float f(float a,float b){float c=Mathf.Tan(Mathf.Pow(b,2)+Mathf.Pow(a,2)+t);return c;}//because why not
+	//public float f(float a,float b){float c=Mathf.Pow(Mathf.Sin(Mathf.Pow(a,2)+Mathf.Pow(Mathf.Sin(b+t),2)-t/3)*2+Mathf.Pow(b,2)/64,2);return c;}//because why not
+	//public float f(float a,float b){float c=Mathf.Sin(a+t)-Mathf.Cos(b-t)+Mathf.Pow(b,2);return c;}//because why not
+	//public float f(float a,float b){float c=Mathf.Sin(((Mathf.Pow(a,2)+Mathf.Pow(b,2))+15*Mathf.Sin(t/5)*4)/(Mathf.Pow(a,2)+Mathf.Pow(b,2)));return c;}//because why not
+	//public float f(float a,float b){float c=Mathf.Pow(b,2)*Mathf.Sin(t)/32+Mathf.Sin(a+t)-Mathf.Cos(b-t);return c;}
+	//public float f(float a,float b){float c=Mathf.Cos(Mathf.Sin((Mathf.Pow(a+t,2)+Mathf.Pow(b+t,2))));return c;}
+	
+	
+	
+	void Start () {
+		
+		verts=new List<Vector3>();
+		groups=new List<int>();
+		isThere=new List<bool>();
+		strMesh=new Mesh();
+		
+	}
+	void Update(){
+		
+	//if(_xmin!=xmin||_xmax!=xmax||_ymin!=ymin||_ymax!=ymax||_zmin!=zmin||_zmax!=zmax||_divs!=divs)	{		
+			//zmin=-(Mathf.Sin(t)+(float)2.5);
+			//zmax=(Mathf.Cos(t)+(float)2.5);
+		t+=Time.deltaTime;
+		verts.Clear();
+		groups.Clear();
+		isThere.Clear();
+		float fl;
+		for(int k3=0;k3<2;k3++){
+			k=0;
+			k1=ymin;
+			for(tk1=0;tk1<divs;tk1++){
+				k2=xmin;
+				for(tk2=0;tk2<divs;tk2++){
+					if(k3==0){
+						
+						fl=f(k1,k2);
+						verts.Add(new Vector3(k1,k2,fl));
+						if(fl<zmax&&fl>zmin)isThere.Add(true);
+						else isThere.Add(false);
+					}
+					if(k3==1){
+						if((tk2%2==0)||(tk1%2==0) /*&! ((tk2%2==0)&&(tk1%2==0))*/){
+							
+							if(tk1%2==0){
+								if(tk1>0 && tk2>0 && isThere[k]){
+									if (isThere[k-1-divs] && isThere[k-divs] && isThere[k]){
+										groups.Add(k);
+										groups.Add(k-1-divs);
+										groups.Add(k-divs);
+									}
+								}
+								if(tk1>0 && tk2<divs-1){
+									if(isThere[k] && isThere[k+1-divs] && isThere[k+1]){
+										groups.Add(k);
+										groups.Add(k+1-divs);
+										groups.Add(k+1);	
+									}
+								}
+								if(tk1<divs-1 && tk2<divs-1){
+									if(isThere[k] && isThere[k+1+divs] && isThere[k+divs]){
+										groups.Add(k);
+										groups.Add(k+divs+1);
+										groups.Add(k+divs);
+									}
+								}
+								if(tk1<divs-1 && tk2>0){
+									if(isThere[k] && isThere[k-1+divs] && isThere[k-1]){
+										groups.Add(k);
+										groups.Add(k+divs-1);
+										groups.Add(k-1);
+									}
+								}
+							}
+							else{
+								if(tk1>0 && tk2>0){
+									if(isThere[k] && isThere[k-1-divs] && isThere[k-divs]){
+										groups.Add(k);
+										groups.Add(k-divs);
+										groups.Add(k-1-divs);
+									}
+								}
+								if(tk1>0 && tk2<divs-1){
+									if(isThere[k] && isThere[k+1-divs] && isThere[k+1]){
+										groups.Add(k);
+										groups.Add(k+1);
+										groups.Add(k+1-divs);							
+									}
+								}
+								if(tk1<divs-1 && tk2<divs-1){
+									if(isThere[k] && isThere[k+1+divs] && isThere[k+divs]){
+										groups.Add(k);
+										groups.Add(k+divs);
+										groups.Add(k+divs+1);
+									}
+								}
+								if(tk1<divs-1 && tk2>0){
+									if(isThere[k] && isThere[k-1+divs] && isThere[k-1]){
+										groups.Add(k);
+										groups.Add(k-1);
+										groups.Add(k+divs-1);
+									}
+								}
+							}
+						}
+					}
+					k+=1;
+					k2+=(xmax-xmin)/divs;
+				}
+				k1+=(ymax-ymin)/divs;
+			}
+		}
+	
+	
+	/*verts.Add(new Vector3(xmin,0,0));
+	verts.Add(new Vector3(xmax,0,0));
+	verts.Add(new Vector3(0,(float)0.2,0));
+	
+	verts.Add(new Vector3(0,ymin,0));
+	verts.Add(new Vector3(0,ymax,0));
+	verts.Add(new Vector3(0,0,(float)0.2));
+	
+	verts.Add(new Vector3(0,0,zmin));
+	verts.Add(new Vector3(0,0,zmax));
+	verts.Add(new Vector3((float)0.2,0,0));
+	
+	groups.Add(verts.Count-1);
+	groups.Add(verts.Count-2);
+	groups.Add(verts.Count-3);
+	groups.Add(verts.Count-3);
+	groups.Add(verts.Count-2);
+	groups.Add(verts.Count-1);
+	
+	groups.Add(verts.Count-4);
+	groups.Add(verts.Count-5);
+	groups.Add(verts.Count-6);
+	groups.Add(verts.Count-6);
+	groups.Add(verts.Count-5);
+	groups.Add(verts.Count-4);
+	
+	groups.Add(verts.Count-7);
+	groups.Add(verts.Count-8);
+	groups.Add(verts.Count-9);
+	groups.Add(verts.Count-9);
+	groups.Add(verts.Count-8);
+	groups.Add(verts.Count-7);*/
+
+	strMesh.Clear();
+	if(!GetComponent<MeshFilter>())
+		gameObject.AddComponent<MeshFilter>();
+	if(!GetComponent<MeshRenderer>())
+		gameObject.AddComponent<MeshRenderer>();
+	for(int c=0;c<groups.Count;c++)
+		if(groups[c]>=k){
+			Debug.Log(groups[c]);
+			groups[c]=0;
+			Debug.Log(c);Debug.Log(" ");
+		}
+	strMesh.vertices=verts.ToArray();
+	strMesh.triangles=groups.ToArray();
+	strMesh.RecalculateNormals();
+	gameObject.GetComponent<MeshFilter>().mesh=strMesh;
+	}
+}
+
